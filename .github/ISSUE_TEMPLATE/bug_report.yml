@@ -1,0 +1,160 @@
+name: 🐛 Bug Report
+description: Report a bug or unexpected behavior
+title: "[BUG] "
+labels: ["bug", "needs-triage"]
+assignees: []
+
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please fill out the information below to help us reproduce and fix the issue.
+
+  - type: checkboxes
+    id: prerequisites
+    attributes:
+      label: Prerequisites
+      description: Please confirm you have completed the following
+      options:
+        - label: I have searched existing issues to ensure this bug hasn't been reported
+          required: true
+        - label: I have read the documentation and examples
+          required: true
+        - label: I am using the latest version of the MCP Server Adapter
+          required: false
+
+  - type: textarea
+    id: description
+    attributes:
+      label: Bug Description
+      description: A clear and concise description of what the bug is
+      placeholder: Describe what happened and what you expected to happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to Reproduce
+      description: Detailed steps to reproduce the behavior
+      placeholder: |
+        1. Create adapter with config...
+        2. Start server...
+        3. Call method...
+        4. See error...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+      description: What you expected to happen
+      placeholder: Describe the expected behavior
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual Behavior
+      description: What actually happened
+      placeholder: Describe what actually happened, include error messages
+    validations:
+      required: true
+
+  - type: textarea
+    id: code
+    attributes:
+      label: Code Sample
+      description: Minimal code sample that reproduces the issue
+      render: go
+      placeholder: |
+        package main
+
+        import "github.com/denkhaus/mcp-server-adapter"
+
+        func main() {
+            // Your code here
+        }
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Error Logs
+      description: Any relevant error logs or output
+      render: shell
+      placeholder: Paste error logs here
+
+  - type: dropdown
+    id: transport
+    attributes:
+      label: Transport Type
+      description: Which MCP transport are you using?
+      options:
+        - stdio
+        - SSE
+        - HTTP
+        - Multiple/Mixed
+        - Not applicable
+    validations:
+      required: false
+
+  - type: input
+    id: go-version
+    attributes:
+      label: Go Version
+      description: Output of `go version`
+      placeholder: go version go1.21.0 linux/amd64
+    validations:
+      required: true
+
+  - type: input
+    id: os
+    attributes:
+      label: Operating System
+      description: Your operating system and version
+      placeholder: Ubuntu 22.04, macOS 13.0, Windows 11, etc.
+    validations:
+      required: true
+
+  - type: input
+    id: adapter-version
+    attributes:
+      label: MCP Server Adapter Version
+      description: Version of the adapter you're using
+      placeholder: v1.0.0, main branch, commit hash
+    validations:
+      required: true
+
+  - type: textarea
+    id: config
+    attributes:
+      label: Configuration
+      description: Your MCP server configuration (remove any sensitive data)
+      render: json
+      placeholder: |
+        {
+          "mcpServers": {
+            "example": {
+              "command": "example-server",
+              "args": ["--port", "8080"]
+            }
+          }
+        }
+
+  - type: textarea
+    id: additional
+    attributes:
+      label: Additional Context
+      description: Any other context about the problem
+      placeholder: Screenshots, related issues, workarounds, etc.
+
+  - type: checkboxes
+    id: contribution
+    attributes:
+      label: Contribution
+      description: Would you like to contribute to fixing this issue?
+      options:
+        - label: I would like to work on fixing this bug
+          required: false

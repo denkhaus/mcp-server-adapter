@@ -1,0 +1,52 @@
+# golangci-lint v2.2.2 configuration for MCP Server Adapter
+version: 2
+
+run:
+  timeout: 5m
+  issues-exit-code: 1
+  tests: true
+
+linters-settings:
+  errcheck:
+    check-type-assertions: true
+    check-blank: true
+  
+  funlen:
+    lines: 60
+    statements: 40
+  
+  gocyclo:
+    min-complexity: 15
+  
+  lll:
+    line-length: 120
+
+linters:
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - misspell
+    - unconvert
+    - gocyclo
+    - funlen
+    - goconst
+    - gosec
+    - lll
+    - nakedret
+    - unparam
+
+issues:
+  exclude-rules:
+    - path: _test\.go
+      linters:
+        - gocyclo
+        - errcheck
+        - funlen
+        - gosec
+    - path: examples/
+      linters:
+        - errcheck
+        - gosec

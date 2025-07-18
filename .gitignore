@@ -1,0 +1,135 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+coverage.html
+coverage.out
+
+# Dependency directories (remove the comment below to include it)
+vendor/
+
+# Go workspace file
+go.work
+.agent.md
+rules/**
+specs/**
+docs/
+
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Log files
+*.log
+
+# Configuration files with secrets
+config-local.json
+.env
+.env.local
+
+# Profiling files
+*.prof
+cpu.prof
+mem.prof
+
+# Build artifacts
+dist/
+build/
+
+# Documentation generated files
+docs/api-reference.txt
+
+# Test artifacts
+testdata/output/
+
+# Coverage reports
+coverage/
+
+# Benchmark results
+benchmark.txt
+benchmarks/
+
+# Local development files
+local/
+dev/
+
+# Editor backup files
+*~
+*.bak
+*.backup
+
+# Node.js (if using any JS tools)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python (if using any Python tools)
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Local configuration overrides
+config.local.json
+mcp.local.json
+
+# MCP Server Adapter specific build artifacts
+# ===========================================
+
+# Build directory
+bin/
+
+# Example binaries (if accidentally built in place)
+examples/agent/agent
+examples/agent/agent.exe
+examples/server/mcp-server
+examples/server/mcp-server.exe
+examples/demo/demo
+examples/demo/demo.exe
+examples/simple-demo/simple-demo
+examples/simple-demo/simple-demo.exe
+
+# Root level binaries that might be created during testing
+/agent
+/agent.exe
+/demo
+/demo.exe
+/mcp-server
+/mcp-server.exe
+
+# Temporary test files with our naming convention
+tmp_rovodev_*

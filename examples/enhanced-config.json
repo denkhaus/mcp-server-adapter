@@ -1,0 +1,30 @@
+{
+  "mcpServers": {
+    "fetch-server": {
+      "command": "./examples/server/mcp-server",
+      "transport": "stdio",
+      "args": [],
+      "env": {},
+      "disabled": false
+    },
+    "http-server": {
+      "transport": "http",
+      "url": "http://localhost:3001/mcp",
+      "method": "POST",
+      "headers": {
+        "Authorization": "Bearer token123",
+        "Content-Type": "application/json"
+      },
+      "timeout": 30000000000,
+      "disabled": true
+    },
+    "sse-server": {
+      "transport": "sse",
+      "url": "http://localhost:3002/mcp/sse",
+      "headers": {
+        "Authorization": "Bearer sse-token"
+      },
+      "disabled": true
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "fetch-server": {
+      "command": "./examples/server/mcp-server",
+      "transport": "stdio",
+      "args": [],
+      "env": {}
+    }
+  }
+}

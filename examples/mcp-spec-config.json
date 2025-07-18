@@ -1,0 +1,90 @@
+{
+  "mcpServers": {
+    "fetcher": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "fetcher-mcp"
+      ],
+      "alwaysAllow": [
+        "fetch_url",
+        "fetch_urls"
+      ]
+    },
+    "fetch-server": {
+      "command": "./examples/server/mcp-server",
+      "transport": "stdio",
+      "args": [],
+      "env": {}
+    },
+    "context7": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@upstash/context7-mcp"
+      ],
+      "disabled": true,
+      "alwaysAllow": [
+        "get-library-docs",
+        "resolve-library-id"
+      ]
+    },
+    "youtube-transcript": {
+      "command": "uvx",
+      "args": [
+        "--from",
+        "git+https://github.com/jkawamoto/mcp-youtube-transcript",
+        "mcp-youtube-transcript"
+      ]
+    },
+    "echo-test": {
+      "command": "echo",
+      "args": [
+        "MCP Echo Test Server"
+      ],
+      "disabled": true,
+      "env": {
+        "MCP_TEST": "true"
+      },
+      "alwaysAllow": [
+        "echo"
+      ]
+    },
+    "cat-test": {
+      "command": "cat",
+      "disabled": true,
+      "alwaysAllow": [
+        "read"
+      ]
+    },
+    "python-mcp": {
+      "command": "python3",
+      "args": [
+        "examples/test-servers/simple-mcp-server.py"
+      ],
+      "disabled": true,
+      "env": {
+        "PYTHONUNBUFFERED": "1",
+        "PYTHONIOENCODING": "utf-8",
+        "MCP_TEST_VAR": "Hello from Python MCP!"
+      },
+      "alwaysAllow": [
+        "echo",
+        "add",
+        "env"
+      ]
+    },
+    "node-mcp": {
+      "command": "node",
+      "args": [
+        "examples/test-servers/simple-mcp-server.js"
+      ],
+      "disabled": true,
+      "alwaysAllow": [
+        "greet",
+        "multiply",
+        "timestamp"
+      ]
+    }
+  }
+}
