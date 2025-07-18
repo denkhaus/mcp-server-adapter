@@ -62,7 +62,11 @@ func TestFileWatcherFunctionality(t *testing.T) { // #nosec G101
 	}, initialConfig)
 }
 
-func runFileWatcherTest(t *testing.T, testFunc func(t *testing.T, adapter *Adapter, configPath string), initialConfig Config) {
+func runFileWatcherTest(
+	t *testing.T,
+	testFunc func(t *testing.T, adapter *Adapter, configPath string),
+	initialConfig Config,
+) {
 	tempDir := t.TempDir()
 	configPath := filepath.Join(tempDir, "test-config.json")
 

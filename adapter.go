@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/fsnotify/fsnotify"
-	"github.com/mark3labs/mcp-go/client"
 	mcpclient "github.com/mark3labs/mcp-go/client"
 	mcptransport "github.com/mark3labs/mcp-go/client/transport"
 	"github.com/mark3labs/mcp-go/mcp"
@@ -54,7 +53,7 @@ type Adapter struct {
 	logger     *log.Logger
 
 	// MCP clients (using mark3labs/mcp-go)
-	clients      map[string]client.MCPClient
+	clients      map[string]mcpclient.MCPClient
 	clientStatus map[string]ServerStatus
 
 	// File watching
@@ -135,7 +134,7 @@ func New(options ...Option) (MCPAdapter, error) {
 	adapter := &Adapter{
 		logLevel:      "info",
 		logger:        log.New(os.Stdout, "[MCP-V2] ", log.LstdFlags),
-		clients:       make(map[string]client.MCPClient),
+		clients:       make(map[string]mcpclient.MCPClient),
 		clientStatus:  make(map[string]ServerStatus),
 		clientFactory: NewClientFactory(), // Default factory
 	}
@@ -439,7 +438,7 @@ func (a *Adapter) GetAllLangChainTools(ctx context.Context) ([]tools.Tool, error
 }
 
 // createMCPClient creates an MCP client based on the server configuration.
-func (a *Adapter) createMCPClient(config *ServerConfig) (*client.Client, error) {
+func (a *Adapter) createMCPClient(config *ServerConfig) (*mcpclient.Client, error) {
 	transport := config.Transport
 	if transport == "" {
 		transport = "stdio" // Default to stdio
@@ -456,7 +455,7 @@ func (a *Adapter) createMCPClient(config *ServerConfig) (*client.Client, error) 
 			env = append(env, fmt.Sprintf("%s=%s", key, value))
 		}
 
-		return client.NewStdioMCPClient(config.Command, env, config.Args...)
+		return mcpclient.NewStdioMCPClient(config.Command, env, config.Args...)
 
 	case TransportSSE:
 		if config.URL == "" {
@@ -468,7 +467,7 @@ func (a *Adapter) createMCPClient(config *ServerConfig) (*client.Client, error) 
 			options = append(options, mcptransport.WithHeaders(config.Headers))
 		}
 
-		return client.NewSSEMCPClient(config.URL, options...)
+		return mcpclient.NewSSEMCPClient(config.URL, options...)
 
 	case TransportHTTP:
 		if config.URL == "" {
@@ -476,7 +475,7 @@ func (a *Adapter) createMCPClient(config *ServerConfig) (*client.Client, error) 
 		}
 
 		// Note: mark3labs/mcp-go uses "streamable http" for HTTP transport
-		return client.NewStreamableHttpClient(config.URL)
+		return mcpclient.NewStreamableHttpClient(config.URL)
 
 	default:
 		return nil, fmt.Errorf("unsupported transport type: %s", transport)
@@ -519,7 +518,7 @@ func (a *Adapter) Close() error {
 }
 
 // closeClientSafely attempts to close a client with timeout and error handling
-func (a *Adapter) closeClientSafely(client client.MCPClient, serverName string) error {
+func (a *Adapter) closeClientSafely(client mcpclient.MCPClient, serverName string) error {
 	// Create a context with timeout for the close operation
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
