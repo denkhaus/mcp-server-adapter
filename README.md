@@ -2,6 +2,10 @@
 
 ## Description
 
+![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/denkhaus/mcp-server-adapter/go.yml)
+![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/denkhaus/mcp-server-adapter)
+[![License](https://img.shields.io/github/license/denkhaus/mcp-server-adapter)](LICENSE)
+
 The `mcp-server-adapter` is a Go package designed to simplify the integration of Model Context Protocol (MCP) servers with LangChain Go applications. It acts as an intermediary, allowing LangChain agents to seamlessly discover, use, and manage tools exposed by various MCP servers. This adapter handles server lifecycle management, configuration watching, and the conversion of MCP tools into a format consumable by LangChain.
 
 ## Features
