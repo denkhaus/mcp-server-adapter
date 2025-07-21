@@ -5,7 +5,8 @@
       "transport": "stdio",
       "args": [],
       "env": {},
-      "disabled": false
+      "disabled": false,
+      "tool_prefix": "fetch-server-prefix"
     },
     "http-server": {
       "transport": "http",
@@ -16,7 +17,8 @@
         "Content-Type": "application/json"
       },
       "timeout": 30000000000,
-      "disabled": true
+      "disabled": true,
+      "tool_prefix": "http-server-prefix"
     },
     "sse-server": {
       "transport": "sse",
@@ -24,7 +26,8 @@
       "headers": {
         "Authorization": "Bearer sse-token"
       },
-      "disabled": true
+      "disabled": true,
+      "tool_prefix": "sse-server-prefix"
     }
   }
 }

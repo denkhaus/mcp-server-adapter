@@ -18,11 +18,12 @@ type ServerConfig struct {
 	AlwaysAllow []string          `json:"alwaysAllow,omitempty"`
 
 	// Extended fields for transport abstraction
-	Transport string            `json:"transport,omitempty"`
-	URL       string            `json:"url,omitempty"`
-	Method    string            `json:"method,omitempty"`
-	Headers   map[string]string `json:"headers,omitempty"`
-	Timeout   time.Duration     `json:"timeout,omitempty"`
+	Transport  string            `json:"transport,omitempty"`
+	URL        string            `json:"url,omitempty"`
+	Method     string            `json:"method,omitempty"`
+	Headers    map[string]string `json:"headers,omitempty"`
+	Timeout    time.Duration     `json:"timeout,omitempty"`
+	ToolPrefix string            `json:"tool_prefix,omitempty"`
 }
 
 // ServerStatus represents the current status of a server.
@@ -49,4 +50,3 @@ func (s ServerStatus) String() string {
 		return "unknown"
 	}
 }
-

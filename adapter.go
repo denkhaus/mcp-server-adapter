@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"regexp"
 	"sync"
 	"time"
 
@@ -422,8 +423,15 @@ func (a *Adapter) GetAllLangChainTools(ctx context.Context) ([]tools.Tool, error
 
 		// Convert and add tools with server prefix
 		for _, mcpTool := range result.Tools {
+			serverConfig := a.config.McpServers[serverName]
+			toolName := fmt.Sprintf("%s.%s", serverName, mcpTool.Name)
+			if serverConfig != nil && serverConfig.ToolPrefix != "" {
+				sanitizedPrefix := sanitizePrefix(serverConfig.ToolPrefix)
+				toolName = fmt.Sprintf("%s/%s", sanitizedPrefix, mcpTool.Name)
+			}
+
 			langchainTool := &MCPTool{
-				name:        fmt.Sprintf("%s.%s", serverName, mcpTool.Name),
+				name:        toolName,
 				description: fmt.Sprintf("[%s] %s", serverName, mcpTool.Description),
 				inputSchema: mcpTool.InputSchema,
 				client:      mcpClient,
@@ -862,4 +870,11 @@ func (a *Adapter) logf(format string, args ...interface{}) {
 	if a.logger != nil && a.logLevel != "silent" {
 		a.logger.Printf(format, args...)
 	}
+}
+
+// sanitizePrefix removes any characters that are not letters, numbers, or hyphens.
+func sanitizePrefix(prefix string) string {
+	// This regex will keep only letters, numbers, and hyphens
+	reg := regexp.MustCompile("[^a-zA-Z0-9-]+")
+	return reg.ReplaceAllString(prefix, "")
 }
