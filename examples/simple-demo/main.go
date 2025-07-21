@@ -96,10 +96,11 @@ func createMCPAdapter() (mcpadapter.MCPAdapter, error) {
 	config := &mcpadapter.Config{
 		McpServers: map[string]*mcpadapter.ServerConfig{
 			"fetch-server": {
-				Command:   getServerBinaryPath(),
-				Transport: "stdio",
-				Args:      []string{},
-				Env:       map[string]string{},
+				Command:    getServerBinaryPath(),
+				Transport:  "stdio",
+				Args:       []string{},
+				Env:        map[string]string{},
+				ToolPrefix: "magic-prefix",
 			},
 		},
 	}
@@ -147,20 +148,20 @@ func getServerBinaryPath() string {
 	if filepath.Ext(os.Args[0]) == exeExtension {
 		executableName += exeExtension
 	}
-	
+
 	// Try different possible locations for the binary
 	possiblePaths := []string{
-		filepath.Join("bin", executableName),        // When run from project root via make
-		filepath.Join("../../bin", executableName),  // When run from examples/simple-demo directory
-		filepath.Join(".", executableName),          // When binary is in current directory
+		filepath.Join("bin", executableName),       // When run from project root via make
+		filepath.Join("../../bin", executableName), // When run from examples/simple-demo directory
+		filepath.Join(".", executableName),         // When binary is in current directory
 	}
-	
+
 	for _, path := range possiblePaths {
 		if _, err := os.Stat(path); err == nil {
 			return path
 		}
 	}
-	
+
 	// Default to the make-based path
 	return filepath.Join("bin", executableName)
 }

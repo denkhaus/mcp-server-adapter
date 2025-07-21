@@ -1,4 +1,4 @@
-// Package main demonstrates the V2 MCP Server Adapter using mark3labs/mcp-go and langchaingo.
+// Package main demonstrates the MCP Server Adapter using mark3labs/mcp-go and langchaingo.
 package main
 
 import (
@@ -11,7 +11,7 @@ import (
 )
 
 func main() { // #nosec G101
-	fmt.Println("=== MCP Server Adapter V2 - Demo ===")
+	fmt.Println("=== MCP Server Adapter - Demo ===")
 	fmt.Println("Using mark3labs/mcp-go client and langchaingo tools")
 
 	adapter, err := initializeAdapter()
@@ -138,7 +138,7 @@ func testToolExecution(ctx context.Context, tool mcpadapter.MCPTool) {
 	case "get_transcript":
 		testInput = `{"url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"}`
 	default:
-		testInput = `{"text": "Hello from V2 adapter!"}`
+		testInput = `{"text": "Hello from MPC server adapter!"}`
 	}
 
 	fmt.Printf("   Input: %s\n", testInput)

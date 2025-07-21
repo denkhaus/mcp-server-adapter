@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"regexp"
 	"sync"
 	"time"
 
@@ -134,7 +133,7 @@ func WithClientFactory(factory ClientFactoryInterface) Option {
 func New(options ...Option) (MCPAdapter, error) {
 	adapter := &Adapter{
 		logLevel:      "info",
-		logger:        log.New(os.Stdout, "[MCP-V2] ", log.LstdFlags),
+		logger:        log.New(os.Stdout, "[MCP-Adapter] ", log.LstdFlags),
 		clients:       make(map[string]mcpclient.MCPClient),
 		clientStatus:  make(map[string]ServerStatus),
 		clientFactory: NewClientFactory(), // Default factory
@@ -163,7 +162,7 @@ func New(options ...Option) (MCPAdapter, error) {
 		}
 	}
 
-	adapter.logf("MCP Adapter V2 initialized with %d servers", len(adapter.clientStatus))
+	adapter.logf("MCP-Adapter initialized with %d servers", len(adapter.clientStatus))
 
 	// Start file watcher if enabled
 	if adapter.fileWatcherEnabled && adapter.configPath != "" {
@@ -364,6 +363,17 @@ func (a *Adapter) StopServer(serverName string) error {
 	return nil
 }
 
+func (a *Adapter) resolveToolName(serverName string, toolName string) string {
+	serverConfig := a.config.McpServers[serverName]
+	resolvedToolName := fmt.Sprintf("%s.%s", serverName, toolName)
+	if serverConfig != nil && serverConfig.ToolPrefix != "" {
+		sanitizedPrefix := sanitizePrefix(serverConfig.ToolPrefix)
+		resolvedToolName = fmt.Sprintf("%s/%s", sanitizedPrefix, toolName)
+	}
+
+	return resolvedToolName
+}
+
 // GetLangChainTools returns all tools from a server as LangChain tools.
 func (a *Adapter) GetLangChainTools(ctx context.Context, serverName string) ([]tools.Tool, error) {
 	a.mu.RLock()
@@ -389,8 +399,10 @@ func (a *Adapter) GetLangChainTools(ctx context.Context, serverName string) ([]t
 	// Convert MCP tools to LangChain tools
 	langchainTools := make([]tools.Tool, 0, len(result.Tools))
 	for _, mcpTool := range result.Tools {
+		toolName := a.resolveToolName(serverName, mcpTool.Name)
+
 		langchainTool := &MCPTool{
-			name:        mcpTool.Name,
+			name:        toolName,
 			description: mcpTool.Description,
 			inputSchema: mcpTool.InputSchema,
 			client:      mcpClient,
@@ -423,12 +435,7 @@ func (a *Adapter) GetAllLangChainTools(ctx context.Context) ([]tools.Tool, error
 
 		// Convert and add tools with server prefix
 		for _, mcpTool := range result.Tools {
-			serverConfig := a.config.McpServers[serverName]
-			toolName := fmt.Sprintf("%s.%s", serverName, mcpTool.Name)
-			if serverConfig != nil && serverConfig.ToolPrefix != "" {
-				sanitizedPrefix := sanitizePrefix(serverConfig.ToolPrefix)
-				toolName = fmt.Sprintf("%s/%s", sanitizedPrefix, mcpTool.Name)
-			}
+			toolName := a.resolveToolName(serverName, mcpTool.Name)
 
 			langchainTool := &MCPTool{
 				name:        toolName,
@@ -558,25 +565,6 @@ func (a *Adapter) isBrokenPipeError(err error) bool {
 		contains(errStr, "EOF")
 }
 
-// contains checks if a string contains a substring (case-insensitive)
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) &&
-		(s == substr ||
-			len(s) > len(substr) &&
-				(s[:len(substr)] == substr ||
-					s[len(s)-len(substr):] == substr ||
-					containsSubstring(s, substr)))
-}
-
-func containsSubstring(s, substr string) bool {
-	for i := 0; i <= len(s)-len(substr); i++ {
-		if s[i:i+len(substr)] == substr {
-			return true
-		}
-	}
-	return false
-}
-
 // IsConfigWatcherRunning returns whether the config watcher is running.
 func (a *Adapter) IsConfigWatcherRunning() bool {
 	a.mu.RLock()
@@ -628,127 +616,6 @@ func (a *Adapter) stopFileWatcherUnsafe() {
 	}
 }
 
-// watchConfigFile monitors the configuration file for changes.
-func (a *Adapter) watchConfigFile() {
-	// Capture the done channel to avoid race conditions
-	a.mu.RLock()
-	done := a.watcherDone
-	events := a.fileWatcher.Events
-	errors := a.fileWatcher.Errors
-	a.mu.RUnlock()
-
-	for {
-		select {
-		case event, ok := <-events:
-			if !ok {
-				return
-			}
-
-			// Handle write events (file modifications)
-			if event.Op&fsnotify.Write == fsnotify.Write {
-				a.logf("Configuration file changed: %s", event.Name)
-				if err := a.handleConfigChange(); err != nil {
-					a.logf("Failed to handle config change: %v", err)
-				}
-			}
-
-		case err, ok := <-errors:
-			if !ok {
-				return
-			}
-			a.logf("File watcher error: %v", err)
-
-		case <-done:
-			return
-		}
-	}
-}
-
-// handleConfigChange reloads the configuration and restarts affected servers.
-func (a *Adapter) handleConfigChange() error { // #nosec G101
-	a.logf("Reloading configuration...")
-
-	// Load the new configuration
-	newConfig, err := loadConfig(a.configPath)
-	if err != nil {
-		return fmt.Errorf("failed to load new config: %w", err)
-	}
-
-	// Call custom callback if provided
-	if a.configWatchCallback != nil {
-		if err := a.configWatchCallback(newConfig); err != nil {
-			a.logf("Config watch callback failed: %v", err)
-			return err
-		}
-	}
-
-	a.mu.Lock()
-	defer a.mu.Unlock()
-
-	oldConfig := a.config
-	a.config = newConfig
-
-	// Determine which servers need to be restarted
-	serversToRestart := a.getServersToRestart(oldConfig, newConfig)
-
-	a.applyConfigChanges(oldConfig, newConfig, serversToRestart)
-
-	a.logf("Configuration reloaded successfully")
-	return nil
-}
-
-// applyConfigChanges applies the configuration changes by stopping,
-// updating status, and starting servers as needed.
-// This function assumes the adapter's mutex is already locked.
-func (a *Adapter) applyConfigChanges(
-	oldConfig, newConfig *Config,
-	serversToRestart map[string]bool,
-) {
-	// Stop servers that are no longer in the config or have changed
-	for serverName := range serversToRestart {
-		if client, exists := a.clients[serverName]; exists {
-			a.logf("Stopping server for restart: %s", serverName)
-			if err := a.closeClientSafely(client, serverName); err != nil && !a.isBrokenPipeError(err) {
-				a.logf("Error stopping server %s: %v", serverName, err)
-			}
-			delete(a.clients, serverName)
-		}
-	}
-
-	// Update client status for all servers in new config
-	for serverName := range newConfig.McpServers {
-		if _, exists := a.clientStatus[serverName]; !exists {
-			a.clientStatus[serverName] = StatusStopped
-		}
-	}
-
-	// Remove status for servers no longer in config
-	for serverName := range oldConfig.McpServers {
-		if _, exists := newConfig.McpServers[serverName]; !exists {
-			delete(a.clientStatus, serverName)
-		}
-	}
-
-	// Start servers that need to be restarted
-	ctx := context.Background()
-	for serverName := range serversToRestart {
-		if serverConfig, exists := newConfig.McpServers[serverName]; exists && !serverConfig.Disabled {
-			a.logf("Restarting server: %s", serverName)
-			a.clientStatus[serverName] = StatusStarting
-
-			// Start server asynchronously
-			go func(name string, config *ServerConfig) {
-				if err := a.startServerAsync(ctx, name, config); err != nil {
-					a.mu.Lock()
-					a.clientStatus[name] = StatusError
-					a.mu.Unlock()
-					a.logf("Failed to restart server %s: %v", name, err)
-				}
-			}(serverName, serverConfig)
-		}
-	}
-}
-
 // getServersToRestart determines which servers need to be restarted based on config changes.
 func (a *Adapter) getServersToRestart(oldConfig, newConfig *Config) map[string]bool {
 	serversToRestart := make(map[string]bool)
@@ -787,94 +654,9 @@ func (a *Adapter) getServersToRestart(oldConfig, newConfig *Config) map[string]b
 	return serversToRestart
 }
 
-// serverConfigChanged checks if a server configuration has changed.
-func (a *Adapter) serverConfigChanged(old, new *ServerConfig) bool {
-	// Compare key fields that would require a restart
-	return old.Command != new.Command ||
-		old.Transport != new.Transport ||
-		old.URL != new.URL ||
-		old.Disabled != new.Disabled ||
-		!equalStringSlices(old.Args, new.Args) ||
-		!equalStringMaps(old.Env, new.Env) ||
-		!equalStringMaps(old.Headers, new.Headers)
-}
-
-// equalStringSlices compares two string slices for equality.
-func equalStringSlices(a, b []string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for i, v := range a {
-		if v != b[i] {
-			return false
-		}
-	}
-	return true
-}
-
-// equalStringMaps compares two string maps for equality.
-func equalStringMaps(a, b map[string]string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-	for k, v := range a {
-		if b[k] != v {
-			return false
-		}
-	}
-	return true
-}
-
-// GetConfig returns the current complete configuration.
-func (a *Adapter) GetConfig() *Config {
-	a.mu.RLock()
-	defer a.mu.RUnlock()
-
-	if a.config == nil {
-		return nil
-	}
-
-	// Return a copy to prevent external modification
-	config := &Config{
-		McpServers: make(map[string]*ServerConfig),
-	}
-
-	// Deep copy server configs
-	for name, serverConfig := range a.config.McpServers {
-		configCopy := *serverConfig
-		// Copy maps
-		if serverConfig.Env != nil {
-			configCopy.Env = make(map[string]string)
-			for k, v := range serverConfig.Env {
-				configCopy.Env[k] = v
-			}
-		}
-		if serverConfig.Headers != nil {
-			configCopy.Headers = make(map[string]string)
-			for k, v := range serverConfig.Headers {
-				configCopy.Headers[k] = v
-			}
-		}
-		if serverConfig.AlwaysAllow != nil {
-			configCopy.AlwaysAllow = make([]string, len(serverConfig.AlwaysAllow))
-			copy(configCopy.AlwaysAllow, serverConfig.AlwaysAllow)
-		}
-		config.McpServers[name] = &configCopy
-	}
-
-	return config
-}
-
 // logf logs a formatted message if logging is enabled.
 func (a *Adapter) logf(format string, args ...interface{}) {
 	if a.logger != nil && a.logLevel != "silent" {
 		a.logger.Printf(format, args...)
 	}
-}
-
-// sanitizePrefix removes any characters that are not letters, numbers, or hyphens.
-func sanitizePrefix(prefix string) string {
-	// This regex will keep only letters, numbers, and hyphens
-	reg := regexp.MustCompile("[^a-zA-Z0-9-]+")
-	return reg.ReplaceAllString(prefix, "")
 }

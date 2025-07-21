@@ -196,20 +196,20 @@ func buildServerIfNeeded() error {
 // getServerBinaryPath returns the path to the server binary
 func getServerBinaryPath() string {
 	executableName := getExecutableName("mcp-server")
-	
+
 	// Try different possible locations for the binary
 	possiblePaths := []string{
-		filepath.Join("bin", executableName),        // When run from project root via make
-		filepath.Join("../../bin", executableName),  // When run from examples/agent directory
-		filepath.Join(".", executableName),          // When binary is in current directory
+		filepath.Join("bin", executableName),       // When run from project root via make
+		filepath.Join("../../bin", executableName), // When run from examples/agent directory
+		filepath.Join(".", executableName),         // When binary is in current directory
 	}
-	
+
 	for _, path := range possiblePaths {
 		if _, err := os.Stat(path); err == nil {
 			return path
 		}
 	}
-	
+
 	// Default to the make-based path
 	return filepath.Join("bin", executableName)
 }
