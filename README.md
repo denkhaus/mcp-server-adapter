@@ -231,6 +231,7 @@ Key configuration options include:
   - `url`: (Required for `sse`, `http` transports) The URL of the MCP server.
   - `headers`: (Optional) HTTP headers for `sse` or `http` transports.
   - `timeout`: (Optional) Timeout for server operations.
+  - `Method`: (Optional, default `POST` for `http` transport) The HTTP method for `http` transport (e.g., `GET`, `POST`).
   - `tool_prefix`: (Optional, default empty string) A custom prefix for resolved tool names. When specified, the tool name format changes from `serverName.toolName` to `tool_prefix/toolname`.
     Example: `"tool_prefix": "magic-prefix"`
   - `alwaysAllow`: (Optional) A list of tool names that are always permitted, usable for permissions or access control.
