@@ -19,6 +19,7 @@ vendor/
 # Go workspace file
 go.work
 .agent.md
+GEMINI.md
 rules/**
 specs/**
 docs/
