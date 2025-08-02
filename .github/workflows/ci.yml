@@ -140,6 +140,14 @@ jobs:
         with:
           sarif_file: results.sarif
 
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: .
+          head: HEAD
+          extra_args: --debug --only-verified
+
   dependency-check:
     name: Dependency Check
     runs-on: ubuntu-latest
