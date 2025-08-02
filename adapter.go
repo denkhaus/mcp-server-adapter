@@ -399,14 +399,13 @@ func (a *Adapter) GetLangChainTools(ctx context.Context, serverName string) ([]t
 	// Convert MCP tools to LangChain tools
 	langchainTools := make([]tools.Tool, 0, len(result.Tools))
 	for _, mcpTool := range result.Tools {
-		toolName := a.resolveToolName(serverName, mcpTool.Name)
-
 		langchainTool := &MCPTool{
-			name:        toolName,
+			name:        mcpTool.Name, // Use original tool name
 			description: mcpTool.Description,
 			inputSchema: mcpTool.InputSchema,
 			client:      mcpClient,
 			serverName:  serverName,
+			toolName:    mcpTool.Name, // Store original tool name
 		}
 		langchainTools = append(langchainTools, langchainTool)
 	}
