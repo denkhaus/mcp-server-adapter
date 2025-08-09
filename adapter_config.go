@@ -8,7 +8,7 @@ import (
 )
 
 // serverConfigChanged checks if a server configuration has changed.
-func (a *Adapter) serverConfigChanged(old, new *ServerConfig) bool {
+func (a *adapterImpl) serverConfigChanged(old, new *ServerConfig) bool {
 	// Compare key fields that would require a restart
 	return old.Command != new.Command ||
 		old.Transport != new.Transport ||
@@ -20,7 +20,7 @@ func (a *Adapter) serverConfigChanged(old, new *ServerConfig) bool {
 }
 
 // GetConfig returns the current complete configuration.
-func (a *Adapter) GetConfig() *Config {
+func (a *adapterImpl) GetConfig() *Config {
 	a.mu.RLock()
 	defer a.mu.RUnlock()
 
@@ -62,7 +62,7 @@ func (a *Adapter) GetConfig() *Config {
 // applyConfigChanges applies the configuration changes by stopping,
 // updating status, and starting servers as needed.
 // This function assumes the adapter's mutex is already locked.
-func (a *Adapter) applyConfigChanges(
+func (a *adapterImpl) applyConfigChanges(
 	oldConfig, newConfig *Config,
 	serversToRestart map[string]bool,
 ) {
@@ -112,7 +112,7 @@ func (a *Adapter) applyConfigChanges(
 }
 
 // handleConfigChange reloads the configuration and restarts affected servers.
-func (a *Adapter) handleConfigChange() error { // #nosec G101
+func (a *adapterImpl) handleConfigChange() error { // #nosec G101
 	a.logf("Reloading configuration...")
 
 	// Load the new configuration
@@ -145,7 +145,7 @@ func (a *Adapter) handleConfigChange() error { // #nosec G101
 }
 
 // watchConfigFile monitors the configuration file for changes.
-func (a *Adapter) watchConfigFile() {
+func (a *adapterImpl) watchConfigFile() {
 	// Capture the done channel to avoid race conditions
 	a.mu.RLock()
 	done := a.watcherDone

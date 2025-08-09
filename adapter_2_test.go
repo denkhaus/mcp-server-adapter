@@ -150,7 +150,7 @@ func TestAdapterWithConfig(t *testing.T) {
 		t.Errorf("Expected 1 server status, got %d", len(statuses))
 	}
 
-	status := adapter.GetServerStatus("echo-server")
+	status := adapter.GetServerStatusByName("echo-server")
 	if status != StatusStopped {
 		t.Errorf("Expected status stopped, got %s", status.String())
 	}
@@ -202,7 +202,7 @@ func TestFileWatcherIntegration(t *testing.T) {
 }
 
 func TestCreateMCPClient(t *testing.T) { // #nosec G101
-	adapter := &Adapter{}
+	adapter := &adapterImpl{}
 
 	createClientTests := []struct {
 		name    string
@@ -351,7 +351,7 @@ func TestResolveToolName(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			// Create a dummy adapter with a config containing the test server config
-			adapter := &Adapter{
+			adapter := &adapterImpl{
 				config: &Config{
 					McpServers: map[string]*ServerConfig{
 						tt.serverName: tt.serverConfig,
@@ -470,7 +470,7 @@ func TestStartServer(t *testing.T) { // #nosec G101
 			// Special handling for "already running" test case
 			if tt.name == "already running" {
 				// Simulate the server already running before calling StartServer
-				concreteAdapter := adapter.(*Adapter)
+				concreteAdapter := adapter.(*adapterImpl)
 				concreteAdapter.mu.Lock()
 				concreteAdapter.clientStatus[tt.serverName] = StatusRunning
 				concreteAdapter.mu.Unlock()
@@ -484,7 +484,7 @@ func TestStartServer(t *testing.T) { // #nosec G101
 			// For async operations, give some time for the goroutine to run
 			time.Sleep(100 * time.Millisecond)
 
-			status := adapter.GetServerStatus(tt.serverName)
+			status := adapter.GetServerStatusByName(tt.serverName)
 			if status != tt.expectedStatus {
 				t.Errorf("Expected status %s, got %s", tt.expectedStatus, status)
 			}
@@ -568,7 +568,7 @@ func TestStopServer(t *testing.T) { // #nosec G101
 			}()
 
 			// Set initial status for the concrete adapter
-			concreteAdapter := adapter.(*Adapter)
+			concreteAdapter := adapter.(*adapterImpl)
 			concreteAdapter.mu.Lock()
 			if tt.serverConfig != nil {
 				concreteAdapter.clientStatus[tt.serverName] = tt.initialStatus
@@ -587,7 +587,7 @@ func TestStopServer(t *testing.T) { // #nosec G101
 				t.Errorf("StopServer() error = %v, expectError %v", err, tt.expectError)
 			}
 
-			status := adapter.GetServerStatus(tt.serverName)
+			status := adapter.GetServerStatusByName(tt.serverName)
 			if status != tt.expectedStatus {
 				t.Errorf("Expected status %s, got %s", tt.expectedStatus, status)
 			}

@@ -188,7 +188,7 @@ func (m *MockAdapter) GetStopServerCalls() []string {
 	return calls
 }
 
-// GetGetToolsCalls returns the list of servers that GetLangChainTools was called for.
+// GetGetToolsCalls returns the list of servers that GetToolsByServerName was called for.
 func (m *MockAdapter) GetGetToolsCalls() []string {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
@@ -314,8 +314,8 @@ func (m *MockAdapter) Close() error {
 	return nil
 }
 
-// GetServerStatus returns the mock status for a server.
-func (m *MockAdapter) GetServerStatus(serverName string) ServerStatus {
+// GetServerStatusByName returns the mock status for a server.
+func (m *MockAdapter) GetServerStatusByName(serverName string) ServerStatus {
 	m.mu.RLock()
 	defer m.mu.RUnlock()
 
@@ -369,8 +369,8 @@ func (m *MockAdapter) WaitForServersReady(ctx context.Context, timeout time.Dura
 	}
 }
 
-// GetLangChainTools returns mock tools for a server.
-func (m *MockAdapter) GetLangChainTools(ctx context.Context, serverName string) ([]tools.Tool, error) {
+// GetToolsByServerName returns mock tools for a server.
+func (m *MockAdapter) GetToolsByServerName(ctx context.Context, serverName string) ([]tools.Tool, error) {
 	m.mu.Lock()
 	m.getToolsCalls = append(m.getToolsCalls, serverName)
 
@@ -392,8 +392,8 @@ func (m *MockAdapter) GetLangChainTools(ctx context.Context, serverName string) 
 	return result, nil
 }
 
-// GetAllLangChainTools returns all mock tools from all servers.
-func (m *MockAdapter) GetAllLangChainTools(ctx context.Context) ([]tools.Tool, error) {
+// GetAllTools returns all mock tools from all servers.
+func (m *MockAdapter) GetAllTools(ctx context.Context) ([]tools.Tool, error) {
 	m.mu.Lock()
 	m.getAllToolsCalls++
 
@@ -469,6 +469,40 @@ func (m *MockAdapter) GetConfig() *Config {
 	}
 
 	return config
+}
+
+// IsServerDisabled checks if a server is disabled in the mock configuration.
+func (m *MockAdapter) IsServerDisabled(serverName string) (bool, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	if m.config == nil {
+		return false, fmt.Errorf("no configuration loaded")
+	}
+
+	serverConfig, exists := m.config.McpServers[serverName]
+	if !exists {
+		return false, fmt.Errorf("server %s not found in configuration", serverName)
+	}
+
+	return serverConfig.Disabled, nil
+}
+
+// GetServerConfig returns the configuration for a specific mock server.
+func (m *MockAdapter) GetServerConfig(serverName string) (*ServerConfig, error) {
+	m.mu.RLock()
+	defer m.mu.RUnlock()
+
+	if m.config == nil {
+		return nil, fmt.Errorf("no configuration loaded")
+	}
+
+	serverConfig, exists := m.config.McpServers[serverName]
+	if !exists {
+		return nil, fmt.Errorf("server %s not found in configuration", serverName)
+	}
+
+	return serverConfig, nil
 }
 
 // SetMockClientInitializeFunc sets the mock function for MockMCPClient.Initialize.

@@ -11,17 +11,23 @@ import (
 	mcptransport "github.com/mark3labs/mcp-go/client/transport"
 )
 
-// ClientFactory implements the ClientFactoryInterface for creating actual MCP clients.
-type ClientFactory struct{}
+// ClientFactoryInterface defines the interface for creating MCPClient instances.
+// This allows for mocking the client creation process in tests.
+type ClientFactoryInterface interface {
+	CreateClient(config *ServerConfig) (mcpclient.MCPClient, error)
+}
+
+// clientFactory implements the ClientFactoryInterface for creating actual MCP clients.
+type clientFactory struct{}
 
 // NewClientFactory creates a new client factory
-func NewClientFactory() *ClientFactory {
-	return &ClientFactory{}
+func NewClientFactory() *clientFactory {
+	return &clientFactory{}
 }
 
 // CreateClient creates an MCP client based on the server configuration
 // This method includes the insights from the alternative implementation
-func (cf *ClientFactory) CreateClient(config *ServerConfig) (mcpclient.MCPClient, error) {
+func (cf *clientFactory) CreateClient(config *ServerConfig) (mcpclient.MCPClient, error) {
 	transport := config.Transport
 	if transport == "" {
 		transport = TransportStdio // Default to stdio
@@ -40,7 +46,7 @@ func (cf *ClientFactory) CreateClient(config *ServerConfig) (mcpclient.MCPClient
 }
 
 // createStdioClient creates a stdio client with improved handling
-func (cf *ClientFactory) createStdioClient(config *ServerConfig) (mcpclient.MCPClient, error) {
+func (cf *clientFactory) createStdioClient(config *ServerConfig) (mcpclient.MCPClient, error) {
 	if config.Command == "" {
 		return nil, fmt.Errorf("command is required for stdio transport")
 	}
@@ -60,7 +66,7 @@ func (cf *ClientFactory) createStdioClient(config *ServerConfig) (mcpclient.MCPC
 }
 
 // isGoProject checks if the command is trying to run a Go project
-func (cf *ClientFactory) isGoProject(config *ServerConfig) bool {
+func (cf *clientFactory) isGoProject(config *ServerConfig) bool {
 	// Check if command is "go" and first arg is "run"
 	if config.Command == "go" && len(config.Args) > 0 && config.Args[0] == "run" {
 		return true
@@ -69,7 +75,7 @@ func (cf *ClientFactory) isGoProject(config *ServerConfig) bool {
 }
 
 // createGoProjectClient handles Go projects by building them as binaries first
-func (cf *ClientFactory) createGoProjectClient(config *ServerConfig, env []string) (mcpclient.MCPClient, error) {
+func (cf *clientFactory) createGoProjectClient(config *ServerConfig, env []string) (mcpclient.MCPClient, error) {
 	if len(config.Args) < 2 {
 		return nil, fmt.Errorf("go run requires at least one source file")
 	}
@@ -115,7 +121,7 @@ func (cf *ClientFactory) createGoProjectClient(config *ServerConfig, env []strin
 }
 
 // getExecutableName returns the executable name with proper extension for the OS
-func (cf *ClientFactory) getExecutableName(base string) string {
+func (cf *clientFactory) getExecutableName(base string) string {
 	if runtime.GOOS == "windows" {
 		return base + ".exe"
 	}
@@ -123,7 +129,7 @@ func (cf *ClientFactory) getExecutableName(base string) string {
 }
 
 // createSSEClient creates an SSE client
-func (cf *ClientFactory) createSSEClient(config *ServerConfig) (mcpclient.MCPClient, error) {
+func (cf *clientFactory) createSSEClient(config *ServerConfig) (mcpclient.MCPClient, error) {
 	if config.URL == "" {
 		return nil, fmt.Errorf("url is required for SSE transport")
 	}
@@ -137,7 +143,7 @@ func (cf *ClientFactory) createSSEClient(config *ServerConfig) (mcpclient.MCPCli
 }
 
 // createHTTPClient creates an HTTP client
-func (cf *ClientFactory) createHTTPClient(config *ServerConfig) (mcpclient.MCPClient, error) {
+func (cf *clientFactory) createHTTPClient(config *ServerConfig) (mcpclient.MCPClient, error) {
 	if config.URL == "" {
 		return nil, fmt.Errorf("url is required for HTTP transport")
 	}

@@ -15,14 +15,14 @@ func TestMockAdapter_BasicOperations(t *testing.T) {
 	defer mock.Reset()
 
 	// Test initial state
-	status := mock.GetServerStatus("test-server")
+	status := mock.GetServerStatusByName("test-server")
 	if status != StatusStopped {
 		t.Errorf("Expected initial status to be stopped, got %s", status.String())
 	}
 
 	// Test setting server status
 	mock.SetServerStatus("test-server", StatusRunning)
-	status = mock.GetServerStatus("test-server")
+	status = mock.GetServerStatusByName("test-server")
 	if status != StatusRunning {
 		t.Errorf("Expected status to be running, got %s", status.String())
 	}
@@ -66,7 +66,7 @@ func TestMockAdapter_StartServer(t *testing.T) {
 	}
 
 	// Check that status was set to running
-	status := mock.GetServerStatus(testServerName)
+	status := mock.GetServerStatusByName(testServerName)
 	if status != StatusRunning {
 		t.Errorf("Expected status to be running, got %s", status.String())
 	}
@@ -174,7 +174,7 @@ func TestMockAdapter_StopServer(t *testing.T) {
 	}
 
 	// Check that status was set to stopped
-	status := mock.GetServerStatus("test-server")
+	status := mock.GetServerStatusByName("test-server")
 	if status != StatusStopped {
 		t.Errorf("Expected status to be stopped, got %s", status.String())
 	}
@@ -241,7 +241,7 @@ func TestMockAdapter_GetLangChainTools(t *testing.T) {
 	// Set tools for server
 	mock.SetServerTools("test-server", tools)
 
-	result, err := mock.GetLangChainTools(ctx, "test-server")
+	result, err := mock.GetToolsByServerName(ctx, "test-server")
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -267,7 +267,7 @@ func TestMockAdapter_GetLangChainToolsWithError(t *testing.T) {
 	// Set error for tools operation
 	mock.SetError("tools", expectedError)
 
-	_, err := mock.GetLangChainTools(ctx, "test-server")
+	_, err := mock.GetToolsByServerName(ctx, "test-server")
 	if err != expectedError {
 		t.Errorf("Expected error %v, got %v", expectedError, err)
 	}
@@ -291,7 +291,7 @@ func TestMockAdapter_GetAllLangChainTools(t *testing.T) {
 	mock.SetServerTools("server2", []tools.Tool{tool2})
 	mock.SetServerTools("server3", []tools.Tool{NewMockTool("tool3", "Should be ignored")})
 
-	result, err := mock.GetAllLangChainTools(ctx)
+	result, err := mock.GetAllTools(ctx)
 	if err != nil {
 		t.Errorf("Expected no error, got %v", err)
 	}
@@ -398,8 +398,8 @@ func TestMockAdapter_Reset(t *testing.T) {
 	ctx := context.Background()
 	_ = mock.StartServer(ctx, "server1")
 	_ = mock.StopServer("server1")
-	_, _ = mock.GetLangChainTools(ctx, "server1")
-	_, _ = mock.GetAllLangChainTools(ctx)
+	_, _ = mock.GetToolsByServerName(ctx, "server1")
+	_, _ = mock.GetAllTools(ctx)
 
 	// Verify state exists
 	if len(mock.GetAllServerStatuses()) == 0 {

@@ -93,7 +93,7 @@ func demonstrateToolUsage(ctx context.Context, adapter mcpadapter.MCPAdapter) {
 		fmt.Println("\n4. No running servers available for tool testing")
 	} else {
 		fmt.Printf("\n4. Getting LangChain tools from %s:\n", serverName)
-		tools, err := adapter.GetLangChainTools(ctx, serverName)
+		tools, err := adapter.GetToolsByServerName(ctx, serverName)
 		if err != nil {
 			fmt.Printf("   ❌ Failed to get tools: %v\n", err)
 		} else {
@@ -114,7 +114,7 @@ func demonstrateToolUsage(ctx context.Context, adapter mcpadapter.MCPAdapter) {
 	}
 
 	fmt.Println("\n6. Getting all LangChain tools from all servers:")
-	allTools, err := adapter.GetAllLangChainTools(ctx)
+	allTools, err := adapter.GetAllTools(ctx)
 	if err != nil {
 		fmt.Printf("   ❌ Failed to get all tools: %v\n", err)
 	} else {

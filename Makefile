@@ -57,7 +57,7 @@ lint: ## Run golangci-lint
 		golangci-lint run; \
 		echo "$(GREEN)Linting completed$(NC)"; \
 	else \
-		echo "$(RED)golangci-lint not found. Install it with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest$(NC)"; \
+		echo "$(RED)golangci-lint not found. Install it with: go install github.com/golangci/golangci-lint/cmd/golangci-lint@2.2.2$(NC)"; \
 		exit 1; \
 	fi
 

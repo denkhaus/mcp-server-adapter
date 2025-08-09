@@ -27,7 +27,7 @@ func (s *MCPService) StartAndWaitForServers(ctx context.Context, timeout time.Du
 }
 
 func (s *MCPService) GetToolCount(ctx context.Context) (int, error) {
-	tools, err := s.adapter.GetAllLangChainTools(ctx)
+	tools, err := s.adapter.GetAllTools(ctx)
 	if err != nil {
 		return 0, err
 	}
@@ -144,10 +144,11 @@ func TestMCPService_GetToolCount_Success(t *testing.T) {
 		t.Errorf("Expected 3 tools (server1 has 2 tools, server2 has 1 tool), got %d", count)
 	}
 
-	// Verify that GetAllLangChainTools was called
+	// Verify that GetAllTools was called
+	// Verify that GetAllTools was called
 	callCount := mock.GetGetAllToolsCalls()
 	if callCount != 1 {
-		t.Errorf("Expected 1 call to GetAllLangChainTools, got %d", callCount)
+		t.Errorf("Expected 1 call to GetAllTools, got %d", callCount)
 	}
 }
 
@@ -345,9 +346,9 @@ func TestMCPService_CallTracking(t *testing.T) {
 		}
 	}
 
-	// Verify GetAllLangChainTools was called twice
+	// Verify GetAllTools was called twice
 	allToolsCalls := mock.GetGetAllToolsCalls()
 	if allToolsCalls != 2 {
-		t.Errorf("Expected 2 calls to GetAllLangChainTools, got %d", allToolsCalls)
+		t.Errorf("Expected 2 calls to GetAllTools, got %d", allToolsCalls)
 	}
 }

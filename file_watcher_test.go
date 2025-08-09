@@ -18,7 +18,7 @@ func TestFileWatcherFunctionality(t *testing.T) { // #nosec G101
 			},
 		},
 	}
-	runFileWatcherTest(t, func(t *testing.T, adapter *Adapter, configPath string) {
+	runFileWatcherTest(t, func(t *testing.T, adapter *adapterImpl, configPath string) {
 
 		if !adapter.IsConfigWatcherRunning() {
 			t.Error("File watcher should be running")
@@ -64,7 +64,7 @@ func TestFileWatcherFunctionality(t *testing.T) { // #nosec G101
 
 func runFileWatcherTest(
 	t *testing.T,
-	testFunc func(t *testing.T, adapter *Adapter, configPath string),
+	testFunc func(t *testing.T, adapter *adapterImpl, configPath string),
 	initialConfig Config,
 ) {
 	tempDir := t.TempDir()
@@ -82,7 +82,7 @@ func runFileWatcherTest(
 	if err != nil {
 		t.Fatalf("Failed to create adapter: %v", err)
 	}
-	adapter := adapterIface.(*Adapter) // Type assertion here
+	adapter := adapterIface.(*adapterImpl) // Type assertion here
 	defer func() {
 		if err := adapter.Close(); err != nil {
 			t.Logf("Failed to close adapter: %v", err)
@@ -101,7 +101,7 @@ func TestFileWatcherWithCallback(t *testing.T) { // #nosec G101
 			},
 		},
 	}
-	runFileWatcherTest(t, func(t *testing.T, adapter *Adapter, configPath string) {
+	runFileWatcherTest(t, func(t *testing.T, adapter *adapterImpl, configPath string) {
 		var mu sync.Mutex
 		callbackCalled := false
 		var callbackConfig *Config
@@ -127,7 +127,7 @@ func TestFileWatcherWithCallback(t *testing.T) { // #nosec G101
 		if err != nil {
 			t.Fatalf("Failed to create adapter: %v", err)
 		}
-		adapter = adapterIface.(*Adapter) // Type assertion here
+		adapter = adapterIface.(*adapterImpl) // Type assertion here
 		defer func() {
 			if err := adapter.Close(); err != nil {
 				t.Logf("Failed to close adapter: %v", err)
@@ -203,7 +203,7 @@ func TestFileWatcherDisabled(t *testing.T) {
 }
 
 func TestServerConfigChanged(t *testing.T) { // #nosec G101
-	adapter := &Adapter{}
+	adapter := &adapterImpl{}
 
 	serverConfigChangedTests := []struct {
 		name     string
@@ -272,7 +272,7 @@ func TestServerConfigChanged(t *testing.T) { // #nosec G101
 }
 
 func TestGetServersToRestart(t *testing.T) {
-	adapter := &Adapter{}
+	adapter := &adapterImpl{}
 
 	oldConfig := &Config{
 		McpServers: map[string]*ServerConfig{

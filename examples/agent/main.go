@@ -51,7 +51,7 @@ func run() error {
 
 	// Get tools from the MCP adapter
 	ctx := context.Background()
-	mcpTools, err := mcpAdapter.GetAllLangChainTools(ctx)
+	mcpTools, err := mcpAdapter.GetAllTools(ctx)
 	if err != nil {
 		return fmt.Errorf("get MCP tools: %w", err)
 	}

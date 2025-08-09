@@ -106,7 +106,7 @@ func TestWaitForServersReady(t *testing.T) { // #nosec G101
 				}
 			}()
 
-			concreteAdapter := adapter.(*Adapter)
+			concreteAdapter := adapter.(*adapterImpl)
 			// Initialize clientStatus based on whether they are expected to start
 			concreteAdapter.mu.Lock()
 			for serverName, config := range tt.serverConfigs {
@@ -154,7 +154,7 @@ func TestWaitForServersReady(t *testing.T) { // #nosec G101
 
 			// Verify final statuses
 			for serverName, expectedRunning := range tt.expectedRunning {
-				status := adapter.GetServerStatus(serverName)
+				status := adapter.GetServerStatusByName(serverName)
 				if expectedRunning && status != StatusRunning {
 					t.Errorf("Server %s: Expected status %s, got %s", serverName, StatusRunning, status)
 				} else if !expectedRunning && status == StatusRunning {
@@ -243,7 +243,7 @@ func TestClose(t *testing.T) { // #nosec G101
 				}
 			}()
 
-			concreteAdapter := adapter.(*Adapter)
+			concreteAdapter := adapter.(*adapterImpl)
 			concreteAdapter.mu.Lock()
 			for serverName, status := range tt.initialStatuses {
 				concreteAdapter.clientStatus[serverName] = status
@@ -264,7 +264,7 @@ func TestClose(t *testing.T) { // #nosec G101
 			}
 
 			for serverName, expectedStatus := range tt.expectedStatuses {
-				status := adapter.GetServerStatus(serverName)
+				status := adapter.GetServerStatusByName(serverName)
 				if status != expectedStatus {
 					t.Errorf("Expected server %s status %s, got %s", serverName, expectedStatus, status)
 				}

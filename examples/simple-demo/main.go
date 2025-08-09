@@ -42,7 +42,7 @@ func run() error {
 
 	// Get available tools
 	fmt.Println("🔧 Getting available tools...")
-	tools, err := adapter.GetAllLangChainTools(ctx)
+	tools, err := adapter.GetAllTools(ctx)
 	if err != nil {
 		return fmt.Errorf("get tools: %w", err)
 	}

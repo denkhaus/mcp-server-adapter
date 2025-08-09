@@ -8,11 +8,14 @@
 
 The `mcp-server-adapter` is a Go package designed to simplify the integration of Model Context Protocol (MCP) servers with LangChain Go applications. It acts as an intermediary, allowing LangChain agents to seamlessly discover, use, and manage tools exposed by various MCP servers. This adapter handles server lifecycle management, configuration watching, and the conversion of MCP tools into a format consumable by LangChain.
 
+**Note: This project is currently a work in progress. While functional, it may undergo significant changes, including breaking API changes, as it evolves.**
+
 ## Features
 
 - **Seamless LangChain Integration**: Exposes MCP server tools as native LangChain `tools.Tool` objects.
 - **MCP Server Lifecycle Management**: Start, stop, and monitor the status of multiple MCP servers.
 - **Dynamic Configuration**: Supports loading server configurations from a JSON file and hot-reloading changes.
+- **Server Status and Configuration Access**: Easily check if a server is disabled or retrieve its full configuration.
 - **File Watcher**: Automatically detects and reacts to changes in the configuration file, restarting affected servers.
 - **Multiple Transport Support**: Connects to MCP servers via standard I/O (stdio), Server-Sent Events (SSE), and HTTP transports.
 - **Robust Error Handling**: Includes mechanisms for safely closing server connections and handling common errors.
@@ -112,7 +115,7 @@ The `mcp-server-adapter` is typically used within a Go application to manage con
     	}
 
     	// Get all available tools from all running servers
-    	allTools, err := adapter.GetAllLangChainTools(ctx)
+    	allTools, err := adapter.GetAllTools(ctx)
     	if err != nil {
     		log.Fatalf("Failed to get LangChain tools: %v", err)
     	}
@@ -121,6 +124,24 @@ The `mcp-server-adapter` is typically used within a Go application to manage con
     	for _, tool := range allTools {
     		log.Printf("- %s: %s", tool.Name(), tool.Description())
     	}
+
+        // Example: Check if a server is disabled
+        isDisabled, err := adapter.IsServerDisabled("fetcher")
+        if err != nil {
+            log.Printf("Error checking if server is disabled: %v", err)
+        } else if isDisabled {
+            log.Printf("Server 'fetcher' is disabled.")
+        } else {
+            log.Printf("Server 'fetcher' is enabled.")
+        }
+
+        // Example: Get server configuration
+        serverConfig, err := adapter.GetServerConfig("tavily-mcp")
+        if err != nil {
+            log.Printf("Error getting server config: %v", err)
+        } else {
+            log.Printf("Server 'tavily-mcp' command: %s", serverConfig.Command)
+        }
 
     	// Example: Using a tool (replace with actual tool usage)
     	// If you have a "fetcher.fetch_url" tool, you could call it like this:
@@ -136,6 +157,14 @@ The `mcp-server-adapter` is typically used within a Go application to manage con
     	// }
     }
     ```
+
+## API Changes
+
+To improve clarity and consistency, the following API functions have been renamed:
+
+- `GetServerStatus(serverName string) ServerStatus` is now `GetServerStatusByName(serverName string) ServerStatus`.
+- `GetLangChainTools(ctx context.Context, serverName string) ([]tools.Tool, error)` is now `GetToolsByServerName(ctx context.Context, serverName string) ([]tools.Tool, error)`.
+- `GetAllLangChainTools(ctx context.Context) ([]tools.Tool, error)` is now `GetAllTools(ctx context.Context) ([]tools.Tool, error)`.
 
 ## Examples
 
